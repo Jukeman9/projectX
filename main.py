@@ -84,10 +84,9 @@ def parse_ai_response(response_message):
 #     """
 #     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
 
-
-chat_open = True
 chat_history = []
 turn_id = 0
+app_open = True
 
 
 def save_chat():
@@ -95,64 +94,92 @@ def save_chat():
         json.dump(chat_history, f, indent=2, ensure_ascii=False)
 
 
-while chat_open:
-    # Begin the chat with turn 1
-    turn_id += 1
+def load_chat():
+    with open("chat_history.json", mode="r") as f:
+        chat = json.load(f)
+        print(chat)
 
-    user_input = input("\nUser: ")
-    print("-" * 10)
 
-    # Add user input to chat history
-    chat_history.append(
-        {
-            "content": user_input,
-            "role": "user",
+def chat_open():
+    global turn_id, chat_history
+    while True:
+        # Begin the chat with turn 1
+        turn_id += 1
+
+        chat_input = input("\nUser (or '/q' or /quit' to quit): ")
+
+        if chat_input.lower() in ["/q", "/quit"]:
+            print("Returning to menu")
+            break
+
+        print("-" * 10)
+
+        # Add user input to chat history
+        chat_history.append(
+            {
+                "content": chat_input,
+                "role": "user",
+                "turn_id": turn_id,
+                "status": "completed",
+                "timestamp": float(int(time.time())),
+                "type": "text",
+            }
+        )
+
+        # Creating an AI reply from user input
+        response = client.responses.create(
+            model="gpt-4.1-nano",
+            input=chat_input,
+        )
+
+        # Save the response message to variable
+        message = response.output[0]
+
+        # Extract the AI reply
+        response_data = parse_ai_response(message)
+
+        # Create an AI output object to save to history
+        # NOTE: Type inconsistency - see CHAT_HISTORY_TYPE_INCONSISTENCY in README.md
+        ai_output = {
+            "role": message.role,
+            "content": response_data,  # May be incomplete due to multimodal limitations
+            "status": message.status,
+            "type": message.type,  # Dynamic type vs user's hardcoded "text"
+            "timestamp": response.created_at,
+            "response_id": response.id,
+            "model": response.model,
+            "usage": {
+                "input tokens": response.usage.input_tokens,
+                "output tokens": response.usage.output_tokens,
+                "total tokens": response.usage.total_tokens,
+            },
             "turn_id": turn_id,
-            "status": "completed",
-            "timestamp": float(int(time.time())),
-            "type": "text",
         }
-    )
 
-    # Creating an AI reply from user input
-    response = client.responses.create(
-        model="gpt-4.1-nano",
-        input=user_input,
-    )
+        # Add ai output to chat history
+        chat_history.append(ai_output)
+        save_chat()
 
-    # Save the response message to variable
-    message = response.output[0]
+        # Display the response text
+        print(f"AI: {response_data['response_text']}")
+        print("-" * 10)
+        print("Response:\n")
+        print(response)
+        print("-" * 10)
+        print("Chat history:\n")
+        print(chat_history)
 
-    # Extract the AI reply
-    response_data = parse_ai_response(message)
 
-    # Create an AI output object to save to history
-    # NOTE: Type inconsistency - see CHAT_HISTORY_TYPE_INCONSISTENCY in README.md
-    ai_output = {
-        "role": message.role,
-        "content": response_data,  # May be incomplete due to multimodal limitations
-        "status": message.status,
-        "type": message.type,  # Dynamic type vs user's hardcoded "text"
-        "timestamp": response.created_at,
-        "response_id": response.id,
-        "model": response.model,
-        "usage": {
-            "input tokens": response.usage.input_tokens,
-            "output tokens": response.usage.output_tokens,
-            "total tokens": response.usage.total_tokens,
-        },
-        "turn_id": turn_id,
-    }
-
-    # Add ai output to chat history
-    chat_history.append(ai_output)
-    save_chat()
-
-    # Display the response text
-    print(f"AI: {response_data['response_text']}")
-    print("-" * 10)
-    print("Response:\n")
-    print(response)
-    print("-" * 10)
-    print("Chat history:\n")
-    print(chat_history)
+while app_open:
+    print("What do you want to do?")
+    print("1. Open chat")
+    print("2. Print the chat history")
+    print("q. Quit the app")
+    app_input = input("Your choice: ")
+    if app_input == "1":
+        chat_open()
+    elif app_input == "2":
+        load_chat()
+    elif app_input == "q":
+        print("Quitting...")
+        break
