@@ -1,0 +1,77 @@
+[
+  {
+    "content": "hi",
+    "role": "user",
+    "turn_id": 1,
+    "status": "completed",
+    "timestamp": 1767075080.0,
+    "type": "text"
+  },
+  {
+    "role": "assistant",
+    "content": {
+      "response_text": "Hello! How can I assist you today?"
+    },
+    "status": "completed",
+    "type": "message",
+    "timestamp": 1767075081.0,
+    "response_id": "resp_0620f0e55cac99dd0069536d0989a88195b08b3b921222fb07",
+    "model": "gpt-4.1-nano-2025-04-14",
+    "usage": {
+      "input tokens": 8,
+      "output tokens": 10,
+      "total tokens": 18
+    },
+    "turn_id": 1
+  },
+  {
+    "content": "hi again",
+    "role": "user",
+    "turn_id": 2,
+    "status": "completed",
+    "timestamp": 1767075138.0,
+    "type": "text"
+  },
+  {
+    "role": "assistant",
+    "content": {
+      "response_text": "Hello again! How can I assist you today?"
+    },
+    "status": "completed",
+    "type": "message",
+    "timestamp": 1767075139.0,
+    "response_id": "resp_0690e361603ac69e0069536d43496881978282f90ebf5d1086",
+    "model": "gpt-4.1-nano-2025-04-14",
+    "usage": {
+      "input tokens": 9,
+      "output tokens": 11,
+      "total tokens": 20
+    },
+    "turn_id": 2
+  },
+  {
+    "content": "what are you up to",
+    "role": "user",
+    "turn_id": 3,
+    "status": "completed",
+    "timestamp": 1767075154.0,
+    "type": "text"
+  },
+  {
+    "role": "assistant",
+    "content": {
+      "response_text": "I'm here and ready to assist you! How can I help today?"
+    },
+    "status": "completed",
+    "type": "message",
+    "timestamp": 1767075155.0,
+    "response_id": "resp_094fb316308433280069536d53098c819382b2516ccedbbf58",
+    "model": "gpt-4.1-nano-2025-04-14",
+    "usage": {
+      "input tokens": 12,
+      "output tokens": 15,
+      "total tokens": 27
+    },
+    "turn_id": 3
+  }
+]
