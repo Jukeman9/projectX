@@ -72,7 +72,7 @@ def parse_ai_response(response_message):
     # TODO: Implement proper content type detection and parsing
     return {
         # WARNING: Assumes text-only content - will break with images/videos
-        "response_text": response_message.content[0].text
+        "text": response_message.content[0].text
     }
 
 
@@ -84,7 +84,9 @@ def parse_ai_response(response_message):
 #     """
 #     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
 
+chat_input = []
 chat_history = []
+
 turn_id = 0
 app_open = True
 
@@ -101,14 +103,14 @@ def load_chat():
 
 
 def chat_open():
-    global turn_id, chat_history
+    global turn_id, chat_history, chat_input
     while True:
         # Begin the chat with turn 1
         turn_id += 1
 
-        chat_input = input("\nUser (or '/q' or /quit' to quit): ")
+        new_input = input("\nUser (or '/q' or /quit' to quit): ")
 
-        if chat_input.lower() in ["/q", "/quit"]:
+        if new_input.lower() in ["/q", "/quit"]:
             print("Returning to menu")
             break
 
@@ -117,7 +119,7 @@ def chat_open():
         # Add user input to chat history
         chat_history.append(
             {
-                "content": chat_input,
+                "content": {"text": new_input},
                 "role": "user",
                 "turn_id": turn_id,
                 "status": "completed",
@@ -125,6 +127,11 @@ def chat_open():
                 "type": "text",
             }
         )
+
+        chat_input = [
+            {"role": message["role"], "content": message["content"]["text"]}
+            for message in chat_history
+        ]
 
         # Creating an AI reply from user input
         response = client.responses.create(
@@ -161,13 +168,16 @@ def chat_open():
         save_chat()
 
         # Display the response text
-        print(f"AI: {response_data['response_text']}")
+        print(f"AI: {response_data['text']}")
         print("-" * 10)
         print("Response:\n")
         print(response)
         print("-" * 10)
         print("Chat history:\n")
         print(chat_history)
+        print("-" * 10)
+        print("Chat content:\n")
+        print(chat_input)
 
 
 while app_open:
