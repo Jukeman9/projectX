@@ -38,6 +38,12 @@ turn_id = 0
 app_open = True
 MAX_CONTEXT_TOKENS = 200000
 
+try:
+    with open("chat_history.json", mode="r") as f:
+        chat_history = json.load(f)
+except FileNotFoundError:
+    chat_history = []
+
 
 def parse_ai_response(response_message):
     """
@@ -139,7 +145,7 @@ def chat_open():
             for message in chat_history
         ]
 
-        # Creating an AI reply from user input if token count not
+        # Creating an AI reply from user input if token count not exceeded
         if token_sum < MAX_CONTEXT_TOKENS:
             response = client.responses.create(
                 model="gpt-4.1-nano",
