@@ -32,6 +32,12 @@ load_dotenv()
 
 client = OpenAI()
 
+chat_input = []
+chat_history = []
+turn_id = 0
+app_open = True
+MAX_CONTEXT_TOKENS = 200000
+
 
 def parse_ai_response(response_message):
     """
@@ -84,12 +90,6 @@ def parse_ai_response(response_message):
 #     """
 #     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
 
-chat_input = []
-chat_history = []
-
-turn_id = 0
-app_open = True
-
 
 def save_chat():
     with open("chat_history.json", mode="w") as f:
@@ -116,6 +116,12 @@ def chat_open():
 
         print("-" * 10)
 
+        if chat_history and "usage" in chat_history[-1]:  # Count tokens
+            last_token_count = chat_history[-1]["usage"]["total tokens"]
+            token_sum = last_token_count + len(new_input)
+        else:
+            token_sum = len(new_input)
+
         # Add user input to chat history
         chat_history.append(
             {
@@ -133,11 +139,15 @@ def chat_open():
             for message in chat_history
         ]
 
-        # Creating an AI reply from user input
-        response = client.responses.create(
-            model="gpt-4.1-nano",
-            input=chat_input,
-        )
+        # Creating an AI reply from user input if token count not
+        if token_sum < MAX_CONTEXT_TOKENS:
+            response = client.responses.create(
+                model="gpt-4.1-nano",
+                input=chat_input,
+            )
+        else:
+            print("Number of tokens exceeded, start a new chat")
+            continue
 
         # Save the response message to variable
         message = response.output[0]
@@ -178,6 +188,9 @@ def chat_open():
         print("-" * 10)
         print("Chat content:\n")
         print(chat_input)
+        print("-" * 10)
+        print("Chat token count:\n")
+        print(token_sum)
 
 
 while app_open:
