@@ -1,5 +1,13 @@
 chat needs to be renamed from chat_history.json to unique name, coolname library later, maybe timestamp for now.
-we need to store the data about all new chats in history_index.json - after the first user sent message to avoid storing empty chats
+we need to store the data about all new chats in history_index.json - after the first user sent message to avoid storing empty chats ✅
+
+current issues:
+1. chat_id
+- issue: is a static value
+- solution: import cool-name library and generate a random 3 word string
+
+
+
 when starting the app we should introduce another option to resume a previous chat
 
 1. user clicks option 2 resume previous chat
@@ -12,4 +20,4 @@ when starting the app we should introduce another option to resume a previous ch
 current issues:
 1. turn_id
 - issue: we are resetting the turns each time the chat starts. If the chat has a history we should load the turn instead.
-- solution: we should check from the chat_history.json if file has any history and append turn based on that.
+- solution: we should check from the chat_history.json if file has any history and append turn based on that. ✅

@@ -34,8 +34,7 @@ client = OpenAI(base_url="http://localhost:11434/v1")
 
 chat_input = []
 chat_history = []
-chat_title = ""
-chat_id = ""
+chat_index = []
 turn_id = 0
 app_open = True
 CHAT_MODEL = "gpt-5-nano"
@@ -105,17 +104,23 @@ def parse_ai_response(response_message):
 #     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def index_chat():
+    chat_index = {
+        "id": "1",
+        "title": chat_history[0]["content"]["text"][:30],
+        "time_created": chat_history[0]["timestamp"],
+    }
+    return chat_index
+
+
+def save_index():
+    with open("chat_index.json", mode="w") as f:
+        json.dump(chat_index, f, indent=2, ensure_ascii=False)
+
+
 def save_chat():
     with open("chat_history.json", mode="w") as f:
         json.dump(chat_history, f, indent=2, ensure_ascii=False)
-
-
-def index_chat():
-    with open("chat_index.json", mode="w") as f:
-        json.dump(
-            chat_id,
-            chat_title,
-        )
 
 
 def load_chat():
@@ -158,6 +163,13 @@ def chat_open():
                 "type": "text",
             }
         )
+
+        save_chat()
+
+        # Here we could add the option to save the chat to json index
+        if len(chat_history) <= 1:
+            chat_index.append(index_chat())
+            save_index()
 
         chat_input = [
             {"role": message["role"], "content": message["content"]["text"]}
