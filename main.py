@@ -9,7 +9,7 @@ KNOWN ISSUES & TECHNICAL DEBT:
 See README.md for detailed issue tracking and future improvements.
 
 1. MULTIMODAL RESPONSE HANDLING (HIGH PRIORITY)
-   - Location: parse_ai_response() function and response processing (lines ~53-73)
+   - Location: parse_ai_response() function and response processing
    - Issue: Assumes all AI responses are text-only content
    - Current: Hard-coded text extraction from message.content[0].text
    - Future: Need to handle images, videos, mixed content based on message.type
@@ -30,19 +30,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI()
+client = OpenAI(base_url="http://localhost:11434/v1")
 
 chat_input = []
 chat_history = []
+chat_title = ""
+chat_id = ""
 turn_id = 0
 app_open = True
+CHAT_MODEL = "gpt-5-nano"
 MAX_CONTEXT_TOKENS = 200000
+OLLAMA_MODEL = "gemma3:4b"
 
 try:
     with open("chat_history.json", mode="r") as f:
         chat_history = json.load(f)
 except FileNotFoundError:
     chat_history = []
+
+
+def get_turn_id():
+    return chat_history[-1]["turn_id"] if chat_history else 0
 
 
 def parse_ai_response(response_message):
@@ -102,6 +110,14 @@ def save_chat():
         json.dump(chat_history, f, indent=2, ensure_ascii=False)
 
 
+def index_chat():
+    with open("chat_index.json", mode="w") as f:
+        json.dump(
+            chat_id,
+            chat_title,
+        )
+
+
 def load_chat():
     with open("chat_history.json", mode="r") as f:
         chat = json.load(f)
@@ -110,8 +126,11 @@ def load_chat():
 
 def chat_open():
     global turn_id, chat_history, chat_input
+
+    # Begin the chat with the last turn
+    turn_id = get_turn_id()
+
     while True:
-        # Begin the chat with turn 1
         turn_id += 1
 
         new_input = input("\nUser (or '/q' or /quit' to quit): ")
@@ -124,7 +143,7 @@ def chat_open():
 
         if chat_history and "usage" in chat_history[-1]:  # Count tokens
             last_token_count = chat_history[-1]["usage"]["total tokens"]
-            token_sum = last_token_count + len(new_input)
+            token_sum = last_token_count + (len(new_input) / 4)
         else:
             token_sum = len(new_input)
 
@@ -148,7 +167,7 @@ def chat_open():
         # Creating an AI reply from user input if token count not exceeded
         if token_sum < MAX_CONTEXT_TOKENS:
             response = client.responses.create(
-                model="gpt-4.1-nano",
+                model=CHAT_MODEL,
                 input=chat_input,
             )
         else:
@@ -186,15 +205,15 @@ def chat_open():
         # Display the response text
         print(f"AI: {response_data['text']}")
         print("-" * 10)
-        print("Response:\n")
-        print(response)
-        print("-" * 10)
+        # print("Response:\n")
+        # print(response)
+        # print("-" * 10)
         print("Chat history:\n")
         print(chat_history)
-        print("-" * 10)
-        print("Chat content:\n")
-        print(chat_input)
-        print("-" * 10)
+        # print("-" * 10)
+        # print("Chat content:\n")
+        # print(chat_input)
+        # print("-" * 10)
         print("Chat token count:\n")
         print(token_sum)
 
@@ -203,12 +222,18 @@ while app_open:
     print("What do you want to do?")
     print("1. Open chat")
     print("2. Print the chat history")
+    print("o. switch to ollama")
     print("q. Quit the app")
     app_input = input("Your choice: ")
     if app_input == "1":
         chat_open()
     elif app_input == "2":
         load_chat()
+    elif app_input == "o":
+        client = OpenAI(base_url="http://localhost:11434/v1")
+        CHAT_MODEL = OLLAMA_MODEL
+    elif app_input == "t":
+        get_turn_id()
     elif app_input == "q":
         print("Quitting...")
         break
