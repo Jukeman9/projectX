@@ -12,5 +12,5 @@ wheels/
 # Env files
 .env
 
-# Chat history
-chat_history.json
+# Chats direcotry
+chats/

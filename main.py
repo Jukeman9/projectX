@@ -25,10 +25,12 @@ For detailed technical specifications, see README.md
 # import datetime
 import time
 import json
-from openai import OpenAI
-from dotenv import load_dotenv
 import random
 import string
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -37,6 +39,7 @@ client = OpenAI(base_url="http://localhost:11434/v1")
 chat_input = []
 chat_history = []
 chat_index = []
+chat_id = None
 turn_id = 0
 app_open = True
 OLLAMA_MODEL = "gemma3:4b"
@@ -45,6 +48,10 @@ CHAT_MODEL = OLLAMA_MODEL
 MAX_CONTEXT_TOKENS = 200000
 
 
+# Create the chats directory if it doesn't exist
+os.makedirs("chats", exist_ok=True)
+
+# That loads chat history - we need to pass it when loading chat from the menu
 try:
     with open("chat_history.json", mode="r") as f:
         chat_history = json.load(f)
@@ -52,6 +59,7 @@ except FileNotFoundError:
     chat_history = []
 
 
+# We should get turn ids when loading the chat from the menu as well.
 def get_turn_id():
     return chat_history[-1]["turn_id"] if chat_history else 0
 
@@ -129,26 +137,30 @@ def generate_chat_id(num_words, word_length):
 
 
 def index_chat():
+    global chat_id
     chat_index = {
         "id": generate_chat_id(num_words=3, word_length=4),
         "title": chat_history[0]["content"]["text"][:30],
         "time_created": chat_history[0]["timestamp"],
     }
+    chat_id = chat_index["id"]
     return chat_index
 
 
 def save_index():
-    with open("chat_index.json", mode="w") as f:
+    with open("chats/chat_index.json", mode="w") as f:
         json.dump(chat_index, f, indent=2, ensure_ascii=False)
 
 
 def save_chat():
-    with open("chat_history.json", mode="w") as f:
+    global chat_id
+    with open(f"chats/{chat_id}.json", mode="w") as f:
         json.dump(chat_history, f, indent=2, ensure_ascii=False)
 
 
 def load_chat():
-    with open("chat_history.json", mode="r") as f:
+    global chat_id
+    with open(f"chats/{chat_id}.json", mode="r") as f:
         chat = json.load(f)
         print(chat)
 
@@ -187,13 +199,13 @@ def chat_open():
                 "type": "text",
             }
         )
-
-        save_chat()
-
-        # Here we could add the option to save the chat to json index
+        # Index chat if chat_history is empty
         if len(chat_history) <= 1:
             chat_index.append(index_chat())
             save_index()
+
+        # Save chat after user sends input
+        save_chat()
 
         chat_input = [
             {"role": message["role"], "content": message["content"]["text"]}
@@ -254,6 +266,9 @@ def chat_open():
         print(token_sum)
 
 
+# def index_open():
+
+
 while app_open:
     print("What do you want to do?")
     print("1. Resume previous chat")
@@ -263,11 +278,12 @@ while app_open:
     print("q. Quit the app")
     app_input = input("Your choice: ")
     if app_input == "1":
-        chat_open()
+        chat_open()  # that opened the chat_history
+    # here we need to load the list of chats and display to the user.
+    # or even better would be to have another loop that comes in here that does the job
+    #
     # elif app_input == "2":
     #     load_chat()
-    elif app_input == "2":
-        # start a new chat
     elif app_input == "o":
         client = OpenAI()
         CHAT_MODEL = OPENAI_MODEL
