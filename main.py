@@ -39,9 +39,11 @@ chat_history = []
 chat_index = []
 turn_id = 0
 app_open = True
-CHAT_MODEL = "gpt-5-nano"
-MAX_CONTEXT_TOKENS = 200000
 OLLAMA_MODEL = "gemma3:4b"
+OPENAI_MODEL = "gpt-5-nano"
+CHAT_MODEL = OLLAMA_MODEL
+MAX_CONTEXT_TOKENS = 200000
+
 
 try:
     with open("chat_history.json", mode="r") as f:
@@ -256,7 +258,7 @@ while app_open:
     print("What do you want to do?")
     print("1. Open chat")
     print("2. Print the chat history")
-    print("o. switch to ollama")
+    print("o. switch to OpenAI API")
     print("q. Quit the app")
     app_input = input("Your choice: ")
     if app_input == "1":
@@ -264,8 +266,8 @@ while app_open:
     elif app_input == "2":
         load_chat()
     elif app_input == "o":
-        client = OpenAI(base_url="http://localhost:11434/v1")
-        CHAT_MODEL = OLLAMA_MODEL
+        client = OpenAI()
+        CHAT_MODEL = OPENAI_MODEL
     elif app_input == "q":
         print("Quitting...")
         break
