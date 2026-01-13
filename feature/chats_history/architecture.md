@@ -5,6 +5,7 @@ current issues:
 1. chat_id
 - issue: is a static value
 - solution: import cool-name library and generate a random 3 word string
+- solution implemented: random strings for now (learning purposes) ✅
 
 
 

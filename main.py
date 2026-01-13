@@ -27,6 +27,8 @@ import time
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+import random
+import string
 
 load_dotenv()
 
@@ -104,9 +106,29 @@ def parse_ai_response(response_message):
 #     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def generate_string(length):
+    """Generatea a random string of specified length"""
+    return "".join(random.choices(string.ascii_lowercase, k=length))
+
+
+def generate_chat_id(num_words, word_length):
+    """
+    Generate a chat ID with multiple random words joined by dashes.
+
+    Args:
+        num_words: How many words to generate (e.g., 3)
+        word_length: How long each word should be (e.g., 6)
+
+    Returns:
+        A string like 'abcdef-xyzabc-mnopqr'
+    """
+    words = [generate_string(word_length) for i in range(num_words)]
+    return "-".join(words)
+
+
 def index_chat():
     chat_index = {
-        "id": "1",
+        "id": generate_chat_id(num_words=3, word_length=4),
         "title": chat_history[0]["content"]["text"][:30],
         "time_created": chat_history[0]["timestamp"],
     }
@@ -244,8 +266,6 @@ while app_open:
     elif app_input == "o":
         client = OpenAI(base_url="http://localhost:11434/v1")
         CHAT_MODEL = OLLAMA_MODEL
-    elif app_input == "t":
-        get_turn_id()
     elif app_input == "q":
         print("Quitting...")
         break
