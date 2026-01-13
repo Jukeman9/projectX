@@ -22,3 +22,11 @@ current issues:
 1. turn_id
 - issue: we are resetting the turns each time the chat starts. If the chat has a history we should load the turn instead.
 - solution: we should check from the chat_history.json if file has any history and append turn based on that. ✅
+
+2. how to load chat from index?
+- issue: we are loading chat directly from chat_history.json
+- solution:
+    1. first we need to save the chat to /chats/ with id as the name instead of chat_history.json
+    2. then when the user clicks resume chat we should load the list of the chat_titles and their timestamp in our terminal window
+    3. maybe we should always start with option 1. start a new chat and then proceed to display chats below and change main menu from start a new chat and resume chat to just 1 option Chat and leave the menu for config stuff. 
+    4. when the user clicks a particular chat we should load the history just like we do now but for that specific chat_id

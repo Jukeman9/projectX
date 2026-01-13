@@ -256,15 +256,18 @@ def chat_open():
 
 while app_open:
     print("What do you want to do?")
-    print("1. Open chat")
-    print("2. Print the chat history")
+    print("1. Resume previous chat")
+    print("2. Start a new chat")
+    # print("2. Print the chat history")
     print("o. switch to OpenAI API")
     print("q. Quit the app")
     app_input = input("Your choice: ")
     if app_input == "1":
         chat_open()
+    # elif app_input == "2":
+    #     load_chat()
     elif app_input == "2":
-        load_chat()
+        # start a new chat
     elif app_input == "o":
         client = OpenAI()
         CHAT_MODEL = OPENAI_MODEL
