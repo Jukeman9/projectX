@@ -27,6 +27,16 @@ current issues:
 - issue: we are loading chat directly from chat_history.json
 - solution:
     1. first we need to save the chat to /chats/ with id as the name instead of chat_history.json ✅
-    2. then when the user clicks resume chat we should load the list of the chat_titles and their timestamp in our terminal window
-    3. maybe we should always start with option 1. start a new chat and then proceed to display chats below and change main menu from start a new chat and resume chat to just 1 option Chat and leave the menu for config stuff. 
-    4. when the user clicks a particular chat we should load the history just like we do now but for that specific chat_id
+    2. then when the user clicks resume chat we should load the list of the chat_titles and their timestamp in our terminal window ✅
+        >I want to do an architecture change - the while app_open () loop will load chat history directly or allow to select a new chat. and the settings will be available with a command like /settings 
+    3. maybe we should always start with option 1. start a new chat and then proceed to display chats below and change main menu from start a new chat and resume chat to just 1 option Chat and leave the menu for config stuff. -> changed to just opening chats directly ✅
+    4. when the user clicks a particular chat we should load the history just like we do now but for that specific chat_id ✅
+    5. Add option to create a new chat if chat_id = None ✅
+    
+3. token count
+- issue: when loading chat from history the first token count does not count against the history, just check user input
+- solution load the previous token count before the first user message if chat history not empty
+
+4. chat_index overwrite
+- issue: chat_index.json gets overwritten on app restart
+- solution: we need to append to it - find the bug

@@ -22,7 +22,7 @@ See README.md for detailed issue tracking and future improvements.
 For detailed technical specifications, see README.md
 """
 
-# import datetime
+from datetime import datetime
 import time
 import json
 import random
@@ -51,12 +51,15 @@ MAX_CONTEXT_TOKENS = 200000
 # Create the chats directory if it doesn't exist
 os.makedirs("chats", exist_ok=True)
 
+
 # That loads chat history - we need to pass it when loading chat from the menu
-try:
-    with open("chat_history.json", mode="r") as f:
-        chat_history = json.load(f)
-except FileNotFoundError:
-    chat_history = []
+def load_chat(chat_id):
+    global chat_history
+    try:
+        with open(f"chats/{chat_id}.json", mode="r") as f:
+            chat_history = json.load(f)
+    except FileNotFoundError:
+        chat_history = []
 
 
 # We should get turn ids when loading the chat from the menu as well.
@@ -107,13 +110,13 @@ def parse_ai_response(response_message):
     }
 
 
-# def unix_time_to_readable(unix_timestamp):
-#     """Convert unix timestamp to a human redable date format
+def unix_time_to_readable(unix_timestamp):
+    """Convert unix timestamp to a human redable date format
 
-#     Args:
-#         unix_timestamp (_type_): _description_
-#     """
-#     return datetime.fromtimestamp(unix_timestmap).strftime("%Y-%m-%d %H:%M:%S")
+    Args:
+        unix_timestamp (_type_): _description_
+    """
+    return datetime.fromtimestamp(unix_timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_string(length):
@@ -152,17 +155,53 @@ def save_index():
         json.dump(chat_index, f, indent=2, ensure_ascii=False)
 
 
+def load_index():
+    global chat_id
+    """Loads the chats from chat_index.json into a nicely formatted table."""
+
+    with open("chats/chat_index.json", mode="r") as f:
+        index = json.load(f)
+
+        # Header
+        print("\n" + "=" * 60)
+        print(f"{'#':<4} {'Chat title':<35} {'Created at':<20}")
+        print("=" * 60)
+
+        # Chat list
+        for i, chat in enumerate(index, start=1):
+            title = (
+                chat["title"][:32] + "..." if len(chat["title"]) > 35 else chat["title"]
+            )
+            timestamp = unix_time_to_readable(chat["time_created"])
+            num = f"{i}."
+            print(f"{num:<4} {title:<35} {timestamp:<20}")
+        print("=" * 60 + "\n")
+
+        print("\nResume previous chat or create new\n")
+        app_input = input(
+            "Enter chat number or type '/new' or '/n' to start a new one: "
+        )
+        if app_input.isdigit() and 1 <= int(app_input) <= len(index):
+            chat_num = index[int(app_input) - 1]
+            chat_id = chat_num["id"]
+        elif app_input.lower() in ["/new", "n"]:
+            chat_id = None
+            print(chat_id)
+        else:
+            print("Invalid choice, try again")
+
+
 def save_chat():
     global chat_id
     with open(f"chats/{chat_id}.json", mode="w") as f:
         json.dump(chat_history, f, indent=2, ensure_ascii=False)
 
 
-def load_chat():
-    global chat_id
-    with open(f"chats/{chat_id}.json", mode="r") as f:
-        chat = json.load(f)
-        print(chat)
+# def load_chat():
+#     global chat_id
+#     with open(f"chats/{chat_id}.json", mode="r") as f:
+#         chat = json.load(f)
+#         print(chat)
 
 
 def chat_open():
@@ -270,23 +309,26 @@ def chat_open():
 
 
 while app_open:
-    print("What do you want to do?")
-    print("1. Resume previous chat")
-    print("2. Start a new chat")
-    # print("2. Print the chat history")
-    print("o. switch to OpenAI API")
-    print("q. Quit the app")
-    app_input = input("Your choice: ")
-    if app_input == "1":
-        chat_open()  # that opened the chat_history
-    # here we need to load the list of chats and display to the user.
-    # or even better would be to have another loop that comes in here that does the job
-    #
-    # elif app_input == "2":
-    #     load_chat()
-    elif app_input == "o":
-        client = OpenAI()
-        CHAT_MODEL = OPENAI_MODEL
-    elif app_input == "q":
-        print("Quitting...")
-        break
+    load_index()
+    load_chat(chat_id)
+    chat_open()
+    # print("What do you want to do?")
+    # print("1. Chat")
+    # print("2. Start a new chat")
+    # # print("2. Print the chat history")
+    # print("o. switch to OpenAI API")
+    # print("q. Quit the app")
+    # app_input = input("Your choice: ")
+    # if app_input == "1":
+    #     chat_open()  # that opened the chat_history
+    # # here we need to load the list of chats and display to the user.
+    # # or even better would be to have another loop that comes in here that does the job
+    # #
+    # # elif app_input == "2":
+    # #     load_chat()
+    # elif app_input == "o":
+    #     client = OpenAI()
+    #     CHAT_MODEL = OPENAI_MODEL
+    # elif app_input == "q":
+    #     print("Quitting...")
+    #     break

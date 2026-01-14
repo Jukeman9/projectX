@@ -1,0 +1,2 @@
+We should allow users to import chats from other apps simply by reindexing the chat history -> if they paste chats in our .json format to the chats folder then we could run /reindex to add them to chat history.
+AI could do that as well - meaning they could just provide AI with some kind of file and it would create json file for each of their conversations and import it into the chats folder and run reindex (that's for an assistant part)
