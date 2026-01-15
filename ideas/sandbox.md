@@ -1,0 +1,1 @@
+i think if designing an ai agent like agent-zero the architecture could benefit from using a sandbox enviroment with a lot of preinstalled tools and then for specfic agent runs we would create a disposable enviroment on top of the first one so not everything needs to be installed so it is faster but allows us to save space after disposal of each task.

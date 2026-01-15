@@ -23,6 +23,7 @@ For detailed technical specifications, see README.md
 """
 
 from datetime import datetime
+from re import ASCII
 import time
 import json
 import random
@@ -36,7 +37,7 @@ load_dotenv()
 
 client = OpenAI(base_url="http://localhost:11434/v1")
 
-chat_input = []
+chat_content = []
 chat_history = []
 chat_index = []
 chat_id = None
@@ -56,10 +57,20 @@ os.makedirs("chats", exist_ok=True)
 def load_chat(chat_id):
     global chat_history
     try:
-        with open(f"chats/{chat_id}.json", mode="r") as f:
+        with open(f"chats/{chat_id}.json", mode="r", encoding="UTF-8") as f:
             chat_history = json.load(f)
     except FileNotFoundError:
         chat_history = []
+
+
+def show_chat_history():
+    print("\n")
+    if chat_history:
+        for message in chat_history:
+            if message["role"] == "user":
+                print(f"User:{message['content']['text']}")
+            elif message["role"] == "assistant":
+                print(f"AI:{message['content']['text']}")
 
 
 # We should get turn ids when loading the chat from the menu as well.
@@ -151,16 +162,16 @@ def index_chat():
 
 
 def save_index():
-    with open("chats/chat_index.json", mode="w") as f:
+    with open("chats/chat_index.json", mode="w", encoding="UTF-8") as f:
         json.dump(chat_index, f, indent=2, ensure_ascii=False)
 
 
 def load_index():
-    global chat_id
+    global chat_id, chat_index
     """Loads the chats from chat_index.json into a nicely formatted table."""
 
-    with open("chats/chat_index.json", mode="r") as f:
-        index = json.load(f)
+    with open("chats/chat_index.json", mode="r", encoding="UTF-8") as f:
+        chat_index = json.load(f)
 
         # Header
         print("\n" + "=" * 60)
@@ -168,7 +179,7 @@ def load_index():
         print("=" * 60)
 
         # Chat list
-        for i, chat in enumerate(index, start=1):
+        for i, chat in enumerate(chat_index, start=1):
             title = (
                 chat["title"][:32] + "..." if len(chat["title"]) > 35 else chat["title"]
             )
@@ -179,16 +190,19 @@ def load_index():
 
         print("\nResume previous chat or create new\n")
         app_input = input(
-            "Enter chat number or type '/new' or '/n' to start a new one: "
+            "Enter chat number or type '/new' or '/n' to start a new one ('/q' or '/quit' to quit): "
         )
-        if app_input.isdigit() and 1 <= int(app_input) <= len(index):
-            chat_num = index[int(app_input) - 1]
+        if app_input.isdigit() and 1 <= int(app_input) <= len(chat_index):
+            chat_num = chat_index[int(app_input) - 1]
             chat_id = chat_num["id"]
-        elif app_input.lower() in ["/new", "n"]:
+        elif app_input.lower() in ["/new", "/n"]:
             chat_id = None
-            print(chat_id)
+            print("\n" + "=" * 60 + "\n\nNew chat")
+        elif app_input.lower() in ["/quit", "/q"]:
+            return False  # Exit the main loop
         else:
             print("Invalid choice, try again")
+        return True
 
 
 def save_chat():
@@ -205,7 +219,7 @@ def save_chat():
 
 
 def chat_open():
-    global turn_id, chat_history, chat_input
+    global turn_id, chat_history, chat_content
 
     # Begin the chat with the last turn
     turn_id = get_turn_id()
@@ -246,7 +260,7 @@ def chat_open():
         # Save chat after user sends input
         save_chat()
 
-        chat_input = [
+        chat_content = [
             {"role": message["role"], "content": message["content"]["text"]}
             for message in chat_history
         ]
@@ -255,7 +269,7 @@ def chat_open():
         if token_sum < MAX_CONTEXT_TOKENS:
             response = client.responses.create(
                 model=CHAT_MODEL,
-                input=chat_input,
+                input=chat_content,
             )
         else:
             print("Number of tokens exceeded, start a new chat")
@@ -295,11 +309,11 @@ def chat_open():
         # print("Response:\n")
         # print(response)
         # print("-" * 10)
-        print("Chat history:\n")
-        print(chat_history)
-        # print("-" * 10)
-        # print("Chat content:\n")
-        # print(chat_input)
+        # print("Chat history:\n")
+        # print(chat_history)
+        print("-" * 10)
+        print("Chat content:\n")
+        print(chat_content)
         # print("-" * 10)
         print("Chat token count:\n")
         print(token_sum)
@@ -309,8 +323,12 @@ def chat_open():
 
 
 while app_open:
-    load_index()
+    should_continue = load_index()
+    if not should_continue:
+        break  # Exit the app
+
     load_chat(chat_id)
+    show_chat_history()
     chat_open()
     # print("What do you want to do?")
     # print("1. Chat")

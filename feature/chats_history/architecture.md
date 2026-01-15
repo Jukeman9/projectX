@@ -20,7 +20,7 @@ when starting the app we should introduce another option to resume a previous ch
 
 current issues:
 1. turn_id
-- issue: we are resetting the turns each time the chat starts. If the chat has a history we should load the turn instead.
+- issue: we are resetting the turns each time the chat starts. If the chat has a history we should load the turn instead. ✅
 - solution: we should check from the chat_history.json if file has any history and append turn based on that. ✅
 
 2. how to load chat from index?
@@ -38,5 +38,9 @@ current issues:
 - solution load the previous token count before the first user message if chat history not empty
 
 4. chat_index overwrite
-- issue: chat_index.json gets overwritten on app restart
-- solution: we need to append to it - find the bug
+- issue: chat_index.json gets overwritten on app restart ✅
+- solution: we need to append to it - find the bug ✅
+
+5. previous message history
+- issue: when user continues and old chat he does not see any previous messages
+- solution: print some at least 3 prior messages first.
